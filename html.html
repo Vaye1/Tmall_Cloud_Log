@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible">
+    
+    <link rel="stylesheet" href="./dist/css/bootstrap.min.css">
+    <title>天猫精灵日志查询工具 -- ChenlenField</title>
+</head>
+<body>
+    <div class="container">
+		<div class="page-header">
+			<h1>天猫精灵日志查询工具 <small> -- ChenlenField</small></h1>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">
+              
+              
+              <form action="#" class="form-inline">
+                <div class="form-group">
+                    <label for="userInput">请输入产品ID：</label>
+                        <input type="text" id='pid' class="form-control" placeholder="请输入产品ID"/>
+                </div>
+    
+                <div class="form-group">
+                    <label for="passInput">请输入设备ID：</label>
+                    <input type="text" id='did' class="form-control" placeholder="请输入设备ID"/>
+                </div>
+
+                <div class="form-group">
+                    <label for="passInput">请输入cookie:</label>
+                    <input id='cookie' type="text" id='time' class="form-control" placeholder="请输入cookie"/>
+                </div>
+
+                <div style="height: 10px;"></div>
+                <div class="form-group">
+                    <label for="passInput">请输入时间信息</label>
+                    <select id='timeType' class='select' onclick="timeTypeSelect(value)" selected="day">
+                        <option value ="hour" onclick="timeTypeSelect('hour')">小时</option>
+                        <option value ="day" onclick="timeTypeSelect('day')">天</option>
+                        <option value="other" onclick="timeTypeSelect('other')">其他</option>
+                    </select>
+                </div>
+                
+                <div id='timevalueinput' class="form-group" style="display: inline-block;">
+                    <label for="passInput">时间:</label>
+                    <input id='valueinput' type="text" id='time' class="form-control" value='1'  placeholder="请输入时间"/>
+                </div>
+                <div class="form-group">
+                    <label for="passInput">一键配置信息:</label>
+                    <input id='ALLConfig' type="text" class="form-control" placeholder="请输入所有配置信息，具体配置详见说明"/>
+                </div>
+
+                <div id='dateinput' class="form-group" style="display: none;"> 
+                    <label for="passInput">请输入开始时间</label>
+                    开始时间:<input type="date" id='aliCloud_startDate' /><input type="time" id='aliCloud_startTime'/>
+                    <label for="passInput">请输入结束时间</label>
+                    结束时间:<input type="date" id='aliCloud_endDate' /><input type="time" id='aliCloud_endTime'/>
+                </div>
+                <br>
+                
+                <br>
+                <div class="form-group">
+                    <button type="button" id='start' class="btn btn-primary" onclick="getLog()">获取日志</button>
+                    <button type="button" id='start' class="btn btn-info" onclick="ImportConfig()">导入一键配置信息</button>
+                    <button type="button" id='start' class="btn btn-warning" onclick="clean()">清除日志</button>
+                </div>
+
+              </form>
+            </div>
+    
+        </div>
+        <input id='table_length' style="display: none;" value=0></input>
+
+		<div class="row" style="margin-top: 10px;">
+			<dic class="col-xs-12">
+                <div class="table-responsive">
+                        <table id='tableList'class="table table-bordered table-hover">
+                        <thead>
+                            <tr class="danger">
+                                <th>序号</th>
+                                <th>traceId</th>
+                                <th>内容</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id='tb'>
+                            
+                        </tbody>
+                    </table>
+                </div>
+			</dic>
+		</div>
+
+	</div>
+    
+</body>
+<script src="./jquery-3.2.1.min.js"></script>
+<script src="./index.js"></script>
+<script src="./dist/js/bootstrap.js"></script>
+<script src="./dist/js/bootstrap.min.js"></script>
+<script>
+    function Format(date,fmt) { // author: meizz
+        var o = {
+            "M+": date.getMonth() + 1, // 月份
+            "d+": date.getDate(), // 日
+            "h+": date.getHours(), // 小时
+            "m+": date.getMinutes(), // 分
+            "s+": date.getSeconds(), // 秒
+            "q+": Math.floor((date.getMonth() + 3) / 3), // 季度
+            "S": date.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+                return fmt;
+    }
+    //时间类型选择方法
+    function timeTypeSelect(val){
+        console.log('val',val)
+        if (val=='hour') {
+            document.getElementById('timevalueinput').style.display='inline-block' ;
+            document.getElementById('dateinput').style.display='none' ;
+        } else if (val=='day') {
+            document.getElementById('timevalueinput').style.display='inline-block' ;
+            document.getElementById('dateinput').style.display='none' ;
+        } else if (val=='other') {
+            document.getElementById('timevalueinput').style.display='none' ;
+            document.getElementById('dateinput').style.display='block' ;
+            document.getElementById('aliCloud_startDate').value=Format(new Date(new Date().getTime()-1*60*60*1000),"yyyy-MM-dd") ;
+            document.getElementById('aliCloud_startTime').value=Format(new Date(new Date().getTime()-1*60*60*1000),"hh:mm") ;
+            document.getElementById('aliCloud_endDate').value=Format(new Date(),"yyyy-MM-dd") ;
+            document.getElementById('aliCloud_endTime').value=Format(new Date(),"hh:mm") ;
+        }
+    }
+
+    //配置一键导入
+    function ImportConfig(){
+        try {
+            let Config=document.getElementById('ALLConfig').value;
+            console.log('Config',Config)
+            Config=JSON.parse(Config)
+            console.log('Config',Config)
+            if(checkKeyExists(Config,'pid','did','cookie','timeType')){
+                console.log("document.getElementById('timeType')",document.getElementById('timeType'))
+                if (Config.pid) {document.getElementById('pid').value=Config.pid}
+                if (Config.did) {document.getElementById('did').value=Config.did}
+                if (Config.cookie) {document.getElementById('cookie').value=Config.cookie}
+                // if (Config.timeType) {document.getElementById('timeType').value='day'}
+                if (Config.timeValue) {document.getElementById('timeType').value=Config.timeValue}
+                if (Config.startDate) {document.getElementById('aliCloud_startDate').value=Config.startDate}
+                if (Config.startTime) {document.getElementById('aliCloud_startTime').value=Config.startTime}
+                if (Config.endDate) {document.getElementById('aliCloud_endDate').value=Config.endDate}
+                if (Config.endTime) {document.getElementById('aliCloud_endTime').value=Config.endTime}
+            }else{
+                alert('一键导入配置失败，检查是否缺少关键信息！')
+            }
+        } catch (error) {
+            console.log(error)
+            alert('一键导入配置失败，检查是否数据信息有误！')
+        }
+    }
+    
+    function checkKeyExists(map, ...keys) {
+		for(let key of keys){
+            if (!(key in map))
+                return false;
+        }
+        return true;
+	}
+    //清除日志
+    function clean(){
+        var tableList=document.getElementById('tableList');
+        var table_length=document.getElementById('table_length').value;
+        for(var i = 0;i <= Number(table_length)-1;i++){
+            // console.log(i)
+            tableList.deleteRow(1)
+        }
+    }
+
+    function getLog(){
+        var pid = document.getElementById('pid').value
+        var did = document.getElementById('did').value
+        var cookie = document.getElementById('cookie').value
+        if (!pid||!did||!cookie) {
+            alert('缺少参数')
+            return;
+        } 
+        clean()
+        var timeType = document.getElementById('timeType').value;
+        var timeValue = document.getElementById('valueinput').value;
+        timeType=timeType||1;
+        let startTime,endTime;
+        if (timeType=='hour') {
+            endTime = new Date().getTime();
+            startTime = endTime-timeValue*60*60*1000;
+        } else if (timeType=='day') {
+            endTime = new Date().getTime();
+            startTime = endTime-timeValue*24*60*60*1000;
+        }else if (timeType=='other') {
+            var aliCloud_startDate = document.getElementById('aliCloud_startDate').value;
+            var aliCloud_startTime = document.getElementById('aliCloud_startTime').value;
+            var aliCloud_endDate = document.getElementById('aliCloud_endDate').value;
+            var aliCloud_endTime = document.getElementById('aliCloud_endTime').value;
+            startTime = new Date(aliCloud_startDate+' '+aliCloud_startTime).getTime();
+            endTime = new Date(aliCloud_endDate+' '+aliCloud_endTime).getTime();
+        }
+        console.log('aliCloud_startDate',endTime,endTime)
+        console.log(endTime-startTime)
+        getCloudLog(cookie,pid,did,0,startTime,endTime)
+    }
+    function getCloudLog(cookie,pid,did,offset,from,to){
+        $.ajax({
+            url:"http://my.showloading.com:9010/api/log/getCloudLog",
+            type:"POST",
+            data:{
+                "cookie": cookie,
+                pid: pid,//产品id
+                did: did,//设备id
+                offset: offset||0,//偏移量 【页码】
+                from: from,//开始时间
+                to: to,//结束时间
+            },
+            success:function(res){
+                console.log("请求结果1",res.code,res)
+                if (res.code==0) {
+                    let data = res.data.data;
+                    var x=document.getElementById('tb');
+                    var table_length=document.getElementById('table_length');
+                    for (let i = 0; i < data.length; i++) {
+                        let item = data[i];
+                        let msg={
+                            id:offset*15+i+1,
+                            traceId:item.content.traceId,
+                            time:item.content.time,
+                            info:item.content
+                        }
+                        var trObj = document.createElement("tr");
+                        trObj.innerHTML = "<td>"+msg.id+"</td><td>"+msg.traceId+"</td><td>"+JSON.stringify(msg.info)+"</td><td>"+msg.time+"</td>";
+			            x.appendChild(trObj);
+                    }
+                    table_length.value=Number(table_length.value)+data.length;
+                    if (data.length==15) {
+                        getCloudLog(cookie,pid,did,offset+1,from,to)
+                    }
+                } else {
+                    alert('请求失败')
+                }
+            },
+            error:function(error){
+                console.log("请求结果error",error)
+            }
+        })
+    }
+</script>
+</html>
