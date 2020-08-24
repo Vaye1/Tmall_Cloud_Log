@@ -66,6 +66,8 @@
                     <button type="button" id='start' class="btn btn-primary" onclick="getLog()">获取日志</button>
                     <button type="button" class="btn btn-info" onclick="ImportConfig()">导入一键配置信息</button>
                     <button type="button" class="btn btn-warning" onclick="clean()">清除日志</button>
+                    <button type="button" class="btn btn-primary" onclick="goHelp()">打开帮助页面</button>
+                    <button type="button" class="btn btn-primary" onclick="goCookie()">打开获取cookie页面</button>
                 </div>
 
               </form>
@@ -102,6 +104,12 @@
 <script src="./dist/js/bootstrap.js"></script>
 <script src="./dist/js/bootstrap.min.js"></script>
 <script>
+    document.title = "天猫精灵日志查询工具 -- ChenlenField";
+
+    setInterval(function(){
+        document.title = document.title.substr(1) + document.title.charAt(0);
+    }, 300)
+
     function Format(date,fmt) { // author: meizz
         var o = {
             "M+": date.getMonth() + 1, // 月份
@@ -197,6 +205,12 @@
         }
     }
 
+    function goHelp() {
+        window.open('./html.html');
+    }
+    function goCookie() {
+        window.open('https://iot-debug-center.aligenie.com/log/search?deviceId=a801511a2900008d263e7afa28020000&type=0&time=%7B%22from%22:1598247379536,%22to%22:1598250979536%7D&offset=0&productKey=10522&isWifi=false');
+    }
     function getLog(){
         var pid = document.getElementById('pid').value
         var did = document.getElementById('did').value
